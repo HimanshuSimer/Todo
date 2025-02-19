@@ -54,6 +54,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation ("com.intuit.sdp:sdp-android:1.1.1")
 
-    implementation ("andriodx.room:room-runtime:2.5.2")
+    implementation ("androidx.room:room-runtime:2.6.1")
     kapt ("androidx.room:room-compiler:2.6.1")
 }

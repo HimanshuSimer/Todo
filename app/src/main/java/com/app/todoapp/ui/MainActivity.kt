@@ -1,6 +1,10 @@
 package com.app.todoapp.ui
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.app.todoapp.R
@@ -35,14 +39,46 @@ class MainActivity : AppCompatActivity() {
 
         loadTasks()
 
+        binding.fabAddTask.setOnClickListener {
+            showAddTaskDialog()
+        }
+
+    }
+
+    private fun showAddTaskDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
+        val etTaskTitle = dialogView.findViewById<EditText>(R.id.etTaskTitle)
+        val etTaskDescription = dialogView.findViewById<EditText>(R.id.etTaskDescription)
+
+        AlertDialog.Builder(this)
+            .setTitle("Add Task")
+            .setView(dialogView)
+            .setPositiveButton("Add") { _, _ ->
+                val title = etTaskTitle.text.toString()
+                val description = etTaskDescription.text.toString()
+
+                if (title.isNotEmpty() && description.isNotEmpty()) {
+                    val task =
+                        TaskEntity(title = title, description = description, isCompleted = false)
+                    insertTask(task)
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Please enter both title and description",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadTasks() {
         CoroutineScope(Dispatchers.IO).launch {
             val tasks = db.taskDao().getAllTasks()
-           runOnUiThread {
-               taskAdapter.updateTask(tasks)
-           }
+            runOnUiThread {
+                taskAdapter.updateTask(tasks)
+            }
         }
     }
 
