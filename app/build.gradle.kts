@@ -56,4 +56,8 @@ dependencies {
 
     implementation ("androidx.room:room-runtime:2.6.1")
     kapt ("androidx.room:room-compiler:2.6.1")
+
+    implementation("androidx.work:work-runtime:2.10.0")
+    // notification
+    implementation("androidx.core:core-ktx:1.12.0")
 }
