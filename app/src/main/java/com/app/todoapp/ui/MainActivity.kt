@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -15,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
@@ -58,6 +60,17 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = taskAdapter
 
+
+//      RecyclerView Animation
+        val fadeIn = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_fade_in)
+        binding.recyclerView.layoutAnimation = fadeIn
+
+//      Recycler Item Animation
+        val animation = DefaultItemAnimator()
+        animation.addDuration = 1000
+        binding.recyclerView.itemAnimator = animation
+
+
         loadTasks()
 
         binding.etSearch.addTextChangedListener(object : TextWatcher {
@@ -69,8 +82,14 @@ class MainActivity : AppCompatActivity() {
         })
 
         binding.fabAddTask.setOnClickListener {
+            animationFab()
             showAddTaskDialog()
         }
+    }
+
+    private fun animationFab() {
+        val anim = AnimationUtils.loadAnimation(this, R.anim.scale_up)
+        binding.fabAddTask.startAnimation(anim)
     }
 
     private fun requestNotificationPermission() {
