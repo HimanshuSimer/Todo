@@ -1,9 +1,22 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.ToDoApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Force Dark Theme -->
+    <style name="Base.Theme.ToDoApp" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Background and Primary Colors -->
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Elevation for 3D Effect -->
+        <item name="android:elevation">8dp</item>
+        <item name="android:shadowColor">@color/blue</item>
+
+
+        <!-- Ensure Dark Mode Always On -->
+        <item name="android:forceDarkAllowed">false</item>
     </style>
+
 
     <style name="Theme.ToDoApp" parent="Base.Theme.ToDoApp" />
 </resources>

@@ -1,5 +1,6 @@
 package com.app.todoapp.ui
-
+import android.graphics.Color
+import androidx.core.view.WindowCompat
 import android.Manifest
 import android.app.TimePickerDialog
 import android.content.pm.PackageManager
@@ -46,6 +47,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.statusBarColor = getColor(R.color.your_background_color)
+        window.navigationBarColor = Color.BLACK
 
         // Request notification permission for Android 13+
         requestNotificationPermission()

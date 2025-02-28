@@ -1,62 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/cardBackground"
     app:cardUseCompatPadding="true"
-    app:strokeWidth="0dp"
-    app:cardElevation="@dimen/_8sdp">
+    app:strokeColor="@color/shadowBlue"
+    app:strokeWidth="2dp"
+    app:cardElevation="10dp"
+    app:cardCornerRadius="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/white"
-        android:padding="@dimen/_16sdp">
+        android:padding="16dp">
 
-        <EditText
-            android:id="@+id/etTaskTitle"
+        <!-- Task Title -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Task Title"
-            android:textColor="@color/black"
-            android:inputType="text"/>
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/blue">
 
-        <EditText
-            android:id="@+id/etTaskDescription"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTaskTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Task Description -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:hint="Task Description"
-            android:layout_marginTop="@dimen/_8sdp"
-            android:textColor="@color/black"
-            android:inputType="text"/>
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/blue">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTaskDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:inputType="textMultiLine" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Category Dropdown -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Category"
+            app:boxBackgroundMode="outline"
+            app:boxStrokeColor="@color/blue">
+
+            <AutoCompleteTextView
+                android:id="@+id/etTaskCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Time Picker -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_8sdp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="12dp">
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvSelectedTime"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="@dimen/_12sdp"
-                android:textColor="@color/black"
-                android:text="Task Reminder Time"/>
+                android:textColor="@color/blue"
+                android:textSize="14sp"
+                android:text="Task Reminder Time" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSelectTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/_8sdp"
+                android:text="Select Time"
                 android:textColor="@color/white"
-                android:text="Select Time"/>
-
+                android:backgroundTint="@color/blue" />
         </LinearLayout>
 
+        <!-- Add Task Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddTask"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Task"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/blue"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 
