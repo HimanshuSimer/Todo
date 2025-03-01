@@ -12,14 +12,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.app.todoapp.R
 import com.app.todoapp.adapter.TaskAdapter
 import com.app.todoapp.databinding.ActivityMainBinding
 import com.app.todoapp.entity.TaskDatabase
 import com.app.todoapp.entity.TaskEntity
+import com.app.todoapp.utils.NotificationHelper
+import com.app.todoapp.utils.TaskReminderWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     private var selectedTime: String? = null // Ensure a time is always selected
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Thread.sleep(3000)
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -95,11 +102,18 @@ class MainActivity : AppCompatActivity() {
 
         // Time picker logic
         btnSelectTime.setOnClickListener {
+            // If selectedTime is available, use it for initializing the time picker
+            val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val currentMinute = Calendar.getInstance().get(Calendar.MINUTE)
+
+            val initialHour = selectedTime?.split(":")?.get(0)?.toIntOrNull() ?: currentHour
+            val initialMinute = selectedTime?.split(":")?.get(1)?.toIntOrNull() ?: currentMinute
+
             val timePicker = TimePickerDialog(this, { _, hour, minute ->
                 val formattedTime = String.format("%02d:%02d", hour, minute)
                 selectedTime = formattedTime
                 tvSelectedTime.text = "Selected Time: $formattedTime"
-            }, 12, 0, true)
+            }, initialHour, initialMinute, true)
             timePicker.show()
         }
 
@@ -137,6 +151,10 @@ class MainActivity : AppCompatActivity() {
     private fun insertTask(task: TaskEntity) {
         CoroutineScope(Dispatchers.IO).launch {
             db.taskDao().insertTask(task)
+
+            // Schedule task reminder worker
+            scheduleTaskReminderWorker(task)
+
             loadTasks()
         }
     }
@@ -155,6 +173,29 @@ class MainActivity : AppCompatActivity() {
             db.taskDao().updateTask(task)
             loadTasks()
         }
+    }
+
+    // Schedule the TaskReminderWorker
+    private fun scheduleTaskReminderWorker(task: TaskEntity) {
+        val timeParts = task.reminderTime.split(":")
+        val hour = timeParts[0].toInt()
+        val minute = timeParts[1].toInt()
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+        }
+
+        val workRequest = OneTimeWorkRequestBuilder<TaskReminderWorker>()
+            .setInputData(workDataOf(
+                "task_title" to task.title,
+                "task_description" to task.description
+            ))
+            .setInitialDelay(calendar.timeInMillis - System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueue(workRequest)
     }
 
     // Inflate menu to add the filter button in the toolbar
