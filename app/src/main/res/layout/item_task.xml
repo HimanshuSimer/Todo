@@ -25,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
+            android:padding="@dimen/_5sdp"
             android:textSize="18sp"
             android:textStyle="bold"
             android:paddingBottom="4dp"/>
@@ -34,13 +35,23 @@
             android:id="@+id/tvTaskDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="@dimen/_5sdp"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:paddingBottom="6dp"
             android:lineSpacingExtra="2dp"/>
 
         <!-- Checkbox for Task Completion -->
-        <CheckBox
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start"
+            android:layout_marginTop="8dp"
+            android:paddingVertical="4dp">
+
+            <CheckBox
             android:id="@+id/cbTaskComplete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,14 +61,14 @@
             android:buttonTint="@color/blue"
             android:padding="4dp"/>
 
-        <!-- Category & Time -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="start"
-            android:layout_marginTop="8dp"
-            android:paddingVertical="4dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="start"
+                android:layout_marginTop="8dp"
+                android:paddingVertical="4dp">
+
 
             <TextView
                 android:id="@+id/tvTaskCategory"
@@ -66,6 +77,7 @@
                 android:textColor="@color/blue"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                android:layout_marginLeft="@dimen/_130sdp"
                 android:paddingEnd="12dp"
                 android:paddingTop="2dp"/>
 
@@ -75,8 +87,11 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/gray"
                 android:textSize="12sp"
+                android:layout_marginLeft="@dimen/_130sdp"
                 android:paddingTop="2dp"
                 android:visibility="gone"/>
+            </LinearLayout>
+
         </LinearLayout>
 
         <!-- Delete Button -->
