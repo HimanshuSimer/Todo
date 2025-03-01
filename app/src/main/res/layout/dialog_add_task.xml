@@ -3,13 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:textColor="@color/blue"
+    android:textColorHint="@color/blue"
+
     app:cardBackgroundColor="@color/cardBackground"
     app:cardUseCompatPadding="true"
     app:strokeColor="@color/shadowBlue"
     app:strokeWidth="2dp"
     app:cardElevation="10dp"
-    app:cardCornerRadius="16dp">
+    app:cardCornerRadius="16dp"
+    android:layout_margin="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Task Title"
+            app:hintTextColor="@color/blue"
             app:boxBackgroundMode="outline"
             app:boxStrokeColor="@color/blue">
 
@@ -39,6 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="Task Description"
+            app:hintTextColor="@color/blue"
             app:boxBackgroundMode="outline"
             app:boxStrokeColor="@color/blue">
 
@@ -56,18 +61,30 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="Category"
+            app:hintTextColor="@color/blue"
             app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/blue">
+            app:boxStrokeColor="@color/blue"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusBottomEnd="8dp">
 
             <AutoCompleteTextView
                 android:id="@+id/etTaskCategory"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:textColor="@color/white"
-                android:inputType="none" />
+                android:textSize="16sp"
+                android:padding="12dp"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:dropDownHeight="wrap_content"
+                android:background="@null"
+                android:gravity="center_vertical"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Time Picker -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -90,18 +107,13 @@
                 android:layout_height="wrap_content"
                 android:text="Select Time"
                 android:textColor="@color/white"
-                android:backgroundTint="@color/blue" />
+                android:backgroundTint="@color/blue"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
-        <!-- Add Task Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnAddTask"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Add Task"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/blue"
-            android:textColor="@color/white" />
+
+
 
     </LinearLayout>
 

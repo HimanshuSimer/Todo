@@ -1,100 +1,73 @@
 package com.app.todoapp.ui
-import android.graphics.Color
-import androidx.core.view.WindowCompat
+
 import android.Manifest
 import android.app.TimePickerDialog
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.LayoutInflater
-import android.view.animation.AnimationUtils
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.app.todoapp.R
 import com.app.todoapp.adapter.TaskAdapter
 import com.app.todoapp.databinding.ActivityMainBinding
 import com.app.todoapp.entity.TaskDatabase
 import com.app.todoapp.entity.TaskEntity
-import com.app.todoapp.utils.TaskReminderWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var taskAdapter: TaskAdapter
     private lateinit var db: TaskDatabase
+    private var allTasks: List<TaskEntity> = emptyList() // Store all tasks for filtering
 
-    // Holds the reminder delay in milliseconds
-    private var reminderDelayMillis: Long = -1
+    private var selectedTime: String? = null // Ensure a time is always selected
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Thread.sleep(3000)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Set the Toolbar as the ActionBar
+        setSupportActionBar(binding.homeToolbar)
+
+        // Customize window colors
         window.statusBarColor = getColor(R.color.your_background_color)
         window.navigationBarColor = Color.BLACK
 
-        // Request notification permission for Android 13+
+        // Request notification permission (for Android 13+)
         requestNotificationPermission()
 
+        // Initialize the database and task adapter
         db = TaskDatabase.getDatabase(this)
 
         taskAdapter = TaskAdapter(mutableListOf(),
             onDelete = { task -> deleteTask(task) },
-            onStatusChange = { task -> updatedTaskStatus(task) }
+            onStatusChange = { task -> updateTaskStatus(task) }
         )
 
+        // Setup RecyclerView
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = taskAdapter
 
-
-//      RecyclerView Animation
-        val fadeIn = AnimationUtils.loadLayoutAnimation(this, R.anim.layout_fade_in)
-        binding.recyclerView.layoutAnimation = fadeIn
-
-//      Recycler Item Animation
-        val animation = DefaultItemAnimator()
-        animation.addDuration = 1000
-        binding.recyclerView.itemAnimator = animation
-
-
+        // Load tasks from database
         loadTasks()
 
-        binding.etSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                taskAdapter.filter(s.toString())
-            }
-        })
-
+        // Add task button click listener
         binding.fabAddTask.setOnClickListener {
-            animationFab()
             showAddTaskDialog()
         }
     }
 
-    private fun animationFab() {
-        val anim = AnimationUtils.loadAnimation(this, R.anim.scale_up)
-        binding.fabAddTask.startAnimation(anim)
-    }
-
+    // Request notification permission (Android 13+)
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -103,77 +76,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Show Add Task dialog
     private fun showAddTaskDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
         val etTaskTitle = dialogView.findViewById<EditText>(R.id.etTaskTitle)
         val etTaskDescription = dialogView.findViewById<EditText>(R.id.etTaskDescription)
+        val etTaskCategory = dialogView.findViewById<AutoCompleteTextView>(R.id.etTaskCategory)
         val btnSelectTime = dialogView.findViewById<Button>(R.id.btnSelectTime)
         val tvSelectedTime = dialogView.findViewById<TextView>(R.id.tvSelectedTime)
 
-        reminderDelayMillis = -1
+        val categories = listOf("Work", "Personal", "Shopping", "Health", "Others")
+        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categories)
+        etTaskCategory.setAdapter(categoryAdapter)
 
+        etTaskCategory.setOnClickListener {
+            etTaskCategory.showDropDown()
+        }
+
+        // Time picker logic
         btnSelectTime.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-            val currentMinute = calendar.get(Calendar.MINUTE)
-            TimePickerDialog(this, { _, hourOfDay, minute ->
-                val targetCalendar = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, hourOfDay)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                if (targetCalendar.timeInMillis <= System.currentTimeMillis()) {
-                    targetCalendar.add(Calendar.DAY_OF_MONTH, 1)
-                }
-                reminderDelayMillis = targetCalendar.timeInMillis - System.currentTimeMillis()
-                tvSelectedTime.text = "Reminder set for: ${hourOfDay}:${minute.toString().padStart(2, '0')}"
-            }, currentHour, currentMinute, true).show()
+            val timePicker = TimePickerDialog(this, { _, hour, minute ->
+                val formattedTime = String.format("%02d:%02d", hour, minute)
+                selectedTime = formattedTime
+                tvSelectedTime.text = "Selected Time: $formattedTime"
+            }, 12, 0, true)
+            timePicker.show()
         }
 
         AlertDialog.Builder(this)
             .setTitle("Add Task")
             .setView(dialogView)
             .setPositiveButton("Add") { _, _ ->
-                val title = etTaskTitle.text.toString()
-                val description = etTaskDescription.text.toString()
-                if (title.isNotEmpty() && description.isNotEmpty()) {
-                    val task = TaskEntity(title = title, description = description, isCompleted = false)
+                val title = etTaskTitle.text.toString().trim()
+                val description = etTaskDescription.text.toString().trim()
+                val category = etTaskCategory.text.toString().trim()
+
+                if (title.isNotEmpty() && description.isNotEmpty() && category.isNotEmpty() && selectedTime != null) {
+                    val task = TaskEntity(title = title, description = description, category = category, reminderTime = selectedTime!!, isCompleted = false)
                     insertTask(task)
-                    if (reminderDelayMillis > 0) {
-                        scheduleReminder(task, reminderDelayMillis)
-                    } else {
-                        Toast.makeText(this, "Task added without reminder.", Toast.LENGTH_SHORT).show()
-                    }
                 } else {
-                    Toast.makeText(this, "Please enter both title and description", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Please fill all fields and select a time", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun scheduleReminder(task: TaskEntity, delayMillis: Long) {
-        val data = Data.Builder()
-            .putString("task_title", task.title)
-            .putString("task_description", task.description)
-            .build()
-        val workRequest = OneTimeWorkRequestBuilder<TaskReminderWorker>()
-            .setInputData(data)
-            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
-            .build()
-        WorkManager.getInstance(this).enqueue(workRequest)
-    }
-
+    // Load tasks from the database
     private fun loadTasks() {
         CoroutineScope(Dispatchers.IO).launch {
             val tasks = db.taskDao().getAllTasks()
             runOnUiThread {
+                allTasks = tasks
                 taskAdapter.updateTask(tasks)
             }
         }
     }
 
+    // Insert a new task into the database
     private fun insertTask(task: TaskEntity) {
         CoroutineScope(Dispatchers.IO).launch {
             db.taskDao().insertTask(task)
@@ -181,17 +141,60 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updatedTaskStatus(task: TaskEntity) {
+    // Delete a task from the database
+    private fun deleteTask(task: TaskEntity) {
+        CoroutineScope(Dispatchers.IO).launch {
+            db.taskDao().deleteTask(task)
+            loadTasks()
+        }
+    }
+
+    // Update task completion status
+    private fun updateTaskStatus(task: TaskEntity) {
         CoroutineScope(Dispatchers.IO).launch {
             db.taskDao().updateTask(task)
             loadTasks()
         }
     }
 
-    private fun deleteTask(task: TaskEntity) {
-        CoroutineScope(Dispatchers.IO).launch {
-            db.taskDao().deleteTask(task)
-            loadTasks()
+    // Inflate menu to add the filter button in the toolbar
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    // Handle menu item click
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_filter -> {
+                showCategoryFilterDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    // Show category filter dialog
+    private fun showCategoryFilterDialog() {
+        val categories = listOf("All", "Work", "Personal", "Shopping", "Health", "Others")
+
+        AlertDialog.Builder(this)
+            .setTitle("Filter by Category")
+            .setItems(categories.toTypedArray()) { _, which ->
+                val selectedCategory = categories[which]
+                filterTasksByCategory(selectedCategory)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // Filter tasks based on selected category
+    private fun filterTasksByCategory(category: String) {
+        val filteredTasks = if (category == "All") {
+            allTasks
+        } else {
+            allTasks.filter { it.category == category }
+        }
+        taskAdapter.updateTask(filteredTasks)
     }
 }

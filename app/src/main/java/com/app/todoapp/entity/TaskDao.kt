@@ -4,7 +4,6 @@ import androidx.room.*
 
 @Dao
 interface TaskDao {
-
     @Insert
     suspend fun insertTask(task: TaskEntity)
 
@@ -14,6 +13,6 @@ interface TaskDao {
     @Delete
     suspend fun deleteTask(task: TaskEntity)
 
-    @Query("SELECT * FROM tasks Order by id DESC")
+    @Query("SELECT * FROM tasks ORDER BY id DESC")
     suspend fun getAllTasks(): List<TaskEntity>
 }
